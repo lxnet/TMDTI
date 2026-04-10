@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TMDTI人格测试 | Too Much Drama Type Indicator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: #0a0a0a;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+        
+        .glitch {
+            position: relative;
+            animation: glitch 3s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff; }
+            25% { text-shadow: -2px 0 #ff00ff, 2px 0 #00ffff; }
+            50% { text-shadow: 2px 0 #00ffff, -2px 0 #ff00ff; }
+            75% { text-shadow: -2px 0 #00ffff, 2px 0 #ff00ff; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .option-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #333;
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .option-card:hover {
+            border-color: #fff;
+            transform: translateX(8px);
+            background: rgba(255,255,255,0.08);
+        }
+        
+        .option-card.selected {
+            border-color: #00ff88;
+            background: rgba(0,255,136,0.15);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #ff00ff 0%, #00ffff 100%);
+            transition: width 0.4s ease;
+        }
+        
+        .type-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        .dimension-bar {
+            background: #1a1a1a;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dimension-fill {
+            transition: width 1s ease-out;
+        }
+        
+        .hidden-page {
+            display: none !important;
+        }
+        
+        .active-page {
+            display: block !important;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        .floating {
+            animation: floating 6s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,0,255,0.3); }
+            50% { box-shadow: 0 0 40px rgba(0,255,255,0.5); }
+        }
+        
+        .strikethrough {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .strikethrough::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 2px;
+            background: #ff0040;
+            transform: rotate(-2deg);
+        }
+        
+        #homePage, #quizPage, #resultPage {
+            width: 100%;
+            min-height: 100vh;
+        }
+        
+        #quizPage, #resultPage {
+            display: none;
+        }
+        
+        /* 截图预览弹窗 */
+        .screenshot-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .screenshot-modal.active {
+            display: flex;
+        }
+        
+        .screenshot-container {
+            max-width: 100%;
+            max-height: 70vh;
+            overflow: auto;
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(255,255,255,0.1);
+        }
+        
+        .screenshot-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .screenshot-hint {
+            margin-top: 20px;
+            text-align: center;
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        .screenshot-close {
+            margin-top: 20px;
+            padding: 12px 32px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* 结果卡片样式优化 - 确保截图美观 */
+        #resultCapture {
+            background: #0a0a0a;
+            padding: 40px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .capture-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .capture-title {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(to right, #ec4899, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .capture-subtitle {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+        
+        .capture-match {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #1f2937;
+            border-radius: 20px;
+            color: #22d3ee;
+            font-family: monospace;
+        }
+        
+        .capture-card {
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .capture-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .capture-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .capture-desc {
+            color: #9ca3af;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .capture-analysis {
+            color: #d1d5db;
+            line-height: 1.8;
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .capture-quote {
+            color: #6b7280;
+            font-style: italic;
+            text-align: center;
+            padding-top: 24px;
+            border-top: 1px solid #374151;
+        }
+        
+        .capture-dimensions {
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .capture-dim-title {
+            color: #d1d5db;
+            font-weight: bold;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        
+        .capture-dim-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .capture-dim-label {
+            width: 100px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        
+        .capture-dim-bar {
+            flex: 1;
+            height: 8px;
+            background: #1f2937;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 12px;
+        }
+        
+        .capture-dim-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .capture-dim-value {
+            width: 50px;
+            text-align: right;
+            color: #d1d5db;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .capture-footer {
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 32px;
+        }
+        
+        .capture-watermark {
+            text-align: center;
+            color: #ec4899;
+            font-size: 14px;
+            margin-top: 16px;
+            font-weight: 500;
+        }
+        
+        /* 截图时的特殊样式 */
+        .screenshotting #resultPage > div:not(#resultCapture) {
+            display: none;
+        }
+        
+        .screenshotting #resultCapture {
+            display: block !important;
+        }
+        
+        /* 加载动画 */
+        .capture-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 99;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .capture-loading.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #ec4899;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="grain"></div>
+    
+    <!-- 加载动画 -->
+    <div id="captureLoading" class="capture-loading">
+        <div class="spinner"></div>
+        <p class="mt-4 text-white">正在生成结果图片...</p>
+    </div>
+    
+    <!-- 截图预览弹窗 -->
+    <div id="screenshotModal" class="screenshot-modal">
+        <div class="screenshot-container" id="screenshotContainer"></div>
+        <p class="screenshot-hint" id="screenshotHint">长按上方图片保存到手机相册</p>
+        <button class="screenshot-close" onclick="closeScreenshot()">关闭</button>
+    </div>
+    
+    <!-- 首页 -->
+    <div id="homePage" class="active-page flex-1 flex flex-col items-center justify-center px-4 py-12 relative">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-20 left-10 w-64 h-64 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+            <div class="absolute bottom-20 right-10 w-64 h-64 bg-cyan-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+        
+        <div class="relative z-10 text-center max-w-2xl mx-auto">
+            <div class="mb-8 floating">
+                <span class="text-6xl md:text-8xl font-black tracking-tighter glitch text-white">TMDTI</span>
+            </div>
+            
+            <h1 class="text-2xl md:text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500">
+                Too Much Drama Type Indicator
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-400 mb-2">
+                <span class="strikethrough text-gray-600">MBTI</span> 已经过时，<span class="text-white font-bold">TMDTI</span> 来了。
+            </p>
+            
+            <div class="mt-8 space-y-4 text-gray-300 text-sm md:text-base leading-relaxed">
+                <p>在这个"那咋了"和"已读乱回"的时代，</p>
+                <p>我们用量身定制的30道灵魂拷问，</p>
+                <p>测出你究竟是<span class="text-pink-400">"偷感很重"</span>的隐形人，</p>
+                <p>还是<span class="text-cyan-400">"Passion"</span>拉满的显眼包。</p>
+            </div>
+            
+            <div class="mt-12 flex flex-col items-center gap-4">
+                <button id="startBtn" class="group relative px-8 py-4 bg-white text-black font-bold text-lg rounded-full overflow-hidden transition-all hover:scale-105 pulse-glow">
+                    <span class="relative z-10">开始测试（共30题）</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-pink-500 to-cyan-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                </button>
+                
+                <p class="text-xs text-gray-500 mt-4">* 全选完才会放行。世界已经够乱了，起码把题做完整。</p>
+            </div>
+            
+            <div class="mt-16 pt-8 border-t border-gray-800 text-xs text-gray-600 space-y-2">
+                <p>灵感来源：<a href="https://sbti.unun.dev/" target="_blank" class="underline hover:text-gray-400">SBTI人格测试</a></p>
+                <p>二创：TMDTI项目组 | 仅供娱乐，请勿用于相亲、面试或算命</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 答题页面 -->
+    <div id="quizPage" class="flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 py-8">
+        <div class="mb-8">
+            <div class="flex justify-between text-sm text-gray-400 mb-2">
+                <span id="progressText">0 / 30</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div id="progressBar" class="progress-bar h-full w-0 rounded-full"></div>
+            </div>
+        </div>
+        
+        <div id="questionContainer" class="flex-1 flex flex-col justify-center min-h-[60vh]">
+            <div id="questionCard" class="slide-in">
+                <h2 id="questionText" class="text-2xl md:text-3xl font-bold mb-8 text-white leading-relaxed"></h2>
+                <div id="optionsContainer" class="space-y-3"></div>
+            </div>
+        </div>
+        
+        <div class="mt-8 flex justify-between items-center">
+            <button id="prevBtn" class="px-6 py-3 text-gray-500 hover:text-white transition-colors disabled:opacity-0" disabled>
+                ← 上一题
+            </button>
+            <div class="flex gap-2">
+                <span id="currentNum" class="text-2xl font-bold text-white">1</span>
+                <span class="text-gray-600 text-2xl">/</span>
+                <span class="text-gray-600 text-2xl">30</span>
+            </div>
+            <button id="nextBtn" class="px-6 py-3 bg-gray-800 text-gray-400 rounded-lg cursor-not-allowed" disabled>
+                下一题 →
+            </button>
+        </div>
+    </div>
+
+    <!-- 结果页面 -->
+    <div id="resultPage" class="flex-1 flex flex-col items-center justify-start px-4 py-12 overflow-y-auto">
+        <!-- 用于截图的区域 -->
+        <div id="resultCapture" style="display: none;">
+            <div class="capture-header">
+                <div class="capture-title" id="captureTitle"></div>
+                <div class="capture-subtitle" id="captureSubtitle"></div>
+                <div class="capture-match" id="captureMatch"></div>
+            </div>
+            
+            <div class="capture-card">
+                <div class="capture-icon" id="captureIcon"></div>
+                <div class="capture-name" id="captureName"></div>
+                <div class="capture-desc" id="captureDesc"></div>
+                <div class="capture-analysis" id="captureAnalysis"></div>
+                <div class="capture-quote" id="captureQuote"></div>
+            </div>
+            
+            <div class="capture-dimensions">
+                <div class="capture-dim-title">五维度评分</div>
+                <div id="captureDimensions"></div>
+            </div>
+            
+            <div class="capture-watermark">TMDTI人格测试 - 测测你的网络人格</div>
+            <div class="capture-footer">本测试仅供娱乐 | 基于网络亚文化研究设计</div>
+        </div>
+        
+        <!-- 正常显示的结果区域 -->
+        <div class="max-w-3xl w-full mx-auto" id="resultDisplay">
+            <div class="text-center mb-12 fade-in">
+                <p class="text-gray-400 mb-4">你的心灵原型</p>
+                <h1 id="resultTitle" class="text-5xl md:text-7xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500"></h1>
+                <p id="resultSubtitle" class="text-xl text-gray-300 mb-6"></p>
+                <div id="matchRate" class="inline-block px-4 py-2 bg-gray-800 rounded-full text-sm font-mono text-cyan-400"></div>
+            </div>
+            
+            <div class="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 mb-8 backdrop-blur-sm fade-in" style="animation-delay: 0.2s;">
+                <div class="flex items-start gap-6 mb-6">
+                    <div id="typeIcon" class="text-6xl floating"></div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white mb-2" id="typeName"></h3>
+                        <p class="text-gray-400" id="typeDesc"></p>
+                    </div>
+                </div>
+                <div class="prose prose-invert max-w-none">
+                    <p id="typeAnalysis" class="text-gray-300 leading-relaxed text-lg"></p>
+                </div>
+                <div class="mt-6 pt-6 border-t border-gray-800">
+                    <p class="text-sm text-gray-500 italic" id="typeQuote"></p>
+                </div>
+            </div>
+            
+            <div class="bg-gray-900/30 border border-gray-800 rounded-2xl p-6 mb-8 fade-in" style="animation-delay: 0.4s;">
+                <h3 class="text-lg font-bold mb-6 text-gray-300">五维度评分</h3>
+                <div id="dimensionsContainer" class="space-y-4"></div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in" style="animation-delay: 0.6s;">
+                <button id="restartBtn" class="px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform">
+                    重新测试
+                </button>
+                <button id="shareBtn" class="px-8 py-4 border border-gray-600 text-white font-bold rounded-full hover:bg-gray-800 transition-colors">
+                    保存结果图片
+                </button>
+            </div>
+            
+            <div class="mt-12 text-center text-xs text-gray-600 fade-in" style="animation-delay: 0.8s;">
+                <p>本测试仅供娱乐，别拿它当诊断、面试、相亲、分手、招魂、算命或人生判决书。</p>
+                <p class="mt-2">TMDTI - 在这个"City不City"的世界里，找到你的"Passion"。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('TMDTI Test Initializing...');
+            initApp();
+        });
+
+        function initApp() {
+            // 30道题目数据
+            const questions = [
+                {
+                    id: 1,
+                    text: "连续参加三天社交活动后，你的状态是？",
+                    options: [
+                        { text: "意犹未尽，还能再战，社交使我充电", scores: { E: 3, A: 1 } },
+                        { text: "需要独处一天来恢复能量", scores: { I: 3, R: 1 } },
+                        { text: "看心情，有时疲惫有时兴奋", scores: { E: 1, I: 1, V: 2 } },
+                        { text: "身体上累但精神上很满足", scores: { E: 2, L: 1 } }
+                    ]
+                },
+                {
+                    id: 2,
+                    text: "在陌生聚会上，你通常如何打开局面？",
+                    options: [
+                        { text: "主动寻找话题，与看起来有趣的人攀谈", scores: { E: 3, A: 2 } },
+                        { text: "等待别人来找我，或找个角落观察", scores: { I: 3, P: 2 } },
+                        { text: "找个理由提前离开或躲在卫生间", scores: { I: 3, R: 2 } },
+                        { text: "分析现场人际关系网络，找关键节点切入", scores: { E: 2, L: 2 } }
+                    ]
+                },
+                {
+                    id: 3,
+                    text: "你理想的周末充电方式是？",
+                    options: [
+                        { text: "和朋友聚会、逛街、参加集体活动", scores: { E: 3, V: 1 } },
+                        { text: "独自在家看书、追剧、做个人爱好", scores: { I: 3, R: 1 } },
+                        { text: "线上社交，在游戏或社群中互动", scores: { I: 2, E: 1, A: 2 } },
+                        { text: "精心规划一个既有社交又有独处的平衡周末", scores: { L: 3, E: 1, I: 1 } }
+                    ]
+                },
+                {
+                    id: 4,
+                    text: "当朋友突然来访时，你的第一反应？",
+                    options: [
+                        { text: "惊喜，立刻准备招待，享受意外之喜", scores: { E: 3, V: 2 } },
+                        { text: "焦虑，觉得计划被打乱，需要心理准备", scores: { I: 3, L: 2 } },
+                        { text: "看是谁，关系好的欢迎，一般的找借口", scores: { I: 2, L: 1 } },
+                        { text: "表面上热情，内心计算能聊多久", scores: { E: 1, I: 2, L: 2 } }
+                    ]
+                },
+                {
+                    id: 5,
+                    text: "你在团队讨论中的角色通常是？",
+                    options: [
+                        { text: "主导发言，推动讨论进程", scores: { E: 3, A: 2 } },
+                        { text: "倾听思考，被点名时才发表见解", scores: { I: 3, R: 2 } },
+                        { text: "记录整理，补充细节和逻辑漏洞", scores: { I: 2, L: 3 } },
+                        { text: "提出非常规观点，打破思维定势", scores: { E: 2, A: 3 } }
+                    ]
+                },
+                {
+                    id: 6,
+                    text: "社交软件上，你更倾向于？",
+                    options: [
+                        { text: "主动发起对话，分享生活动态", scores: { E: 3, A: 2 } },
+                        { text: "被动接收信息，很少主动找人", scores: { I: 3, R: 2 } },
+                        { text: "在群里活跃，私聊较少", scores: { E: 2, I: 1, A: 1 } },
+                        { text: "精心编辑内容，追求高质量表达", scores: { I: 2, L: 2, R: 1 } }
+                    ]
+                },
+                {
+                    id: 7,
+                    text: "面对冲突时，你的本能反应？",
+                    options: [
+                        { text: "当场辩论，把问题摊开说清楚", scores: { E: 3, A: 2 } },
+                        { text: "回避冲突，事后用文字梳理", scores: { I: 3, R: 2 } },
+                        { text: "冷静分析，寻找最优解决方案", scores: { L: 3, R: 2 } },
+                        { text: "用幽默或转移话题化解紧张", scores: { E: 2, A: 2, V: 1 } }
+                    ]
+                },
+                {
+                    id: 8,
+                    text: "你更喜欢哪种工作环境？",
+                    options: [
+                        { text: "开放式办公，随时交流碰撞", scores: { E: 3, V: 2 } },
+                        { text: "独立隔间，专注不受干扰", scores: { I: 3, L: 2 } },
+                        { text: "灵活办公，需要协作时能快速连接", scores: { E: 2, I: 2, L: 1 } },
+                        { text: "远程工作，通过线上保持联系", scores: { I: 3, R: 2, L: 1 } }
+                    ]
+                },
+                {
+                    id: 9,
+                    text: "表达观点时，你更倾向于？",
+                    options: [
+                        { text: "夸张渲染，用强烈情绪感染他人", scores: { A: 3, E: 2 } },
+                        { text: "客观陈述，基于事实和逻辑", scores: { R: 3, L: 2 } },
+                        { text: "用比喻、故事让观点更生动", scores: { A: 3, V: 1 } },
+                        { text: "谨慎措辞，避免过度解读", scores: { R: 3, I: 1 } }
+                    ]
+                },
+                {
+                    id: 10,
+                    text: "描述一次旅行经历，你会？",
+                    options: [
+                        { text: "强调感受和氛围，'那一刻太震撼了'", scores: { A: 3, V: 2 } },
+                        { text: "列举行程、费用、实用信息", scores: { R: 3, L: 2 } },
+                        { text: "用滤镜和文案营造特定风格", scores: { A: 3, E: 1 } },
+                        { text: "分析文化差异和社会观察", scores: { R: 3, L: 3 } }
+                    ]
+                },
+                {
+                    id: 11,
+                    text: "面对一个复杂概念，你如何向他人解释？",
+                    options: [
+                        { text: "用网络梗或流行文化类比", scores: { A: 3, E: 1 } },
+                        { text: "拆解步骤，画图表说明", scores: { R: 3, L: 2 } },
+                        { text: "讲一个相关的故事或案例", scores: { A: 2, V: 2 } },
+                        { text: "推荐专业资料让对方自己看", scores: { R: 3, I: 2 } }
+                    ]
+                },
+                {
+                    id: 12,
+                    text: "你的社交媒体风格更接近？",
+                    options: [
+                        { text: "情绪饱满，经常使用感叹号和表情包", scores: { A: 3, E: 2 } },
+                        { text: "克制理性，文字简洁准确", scores: { R: 3, I: 2 } },
+                        { text: "艺术化表达，追求独特审美", scores: { A: 3, V: 2 } },
+                        { text: "实用主义，分享干货和资源", scores: { R: 3, L: 2 } }
+                    ]
+                },
+                {
+                    id: 13,
+                    text: "当朋友向你倾诉烦恼时，你通常？",
+                    options: [
+                        { text: "共情回应，'我懂这种感觉太难受了'", scores: { A: 3, V: 2 } },
+                        { text: "分析原因，提供解决方案", scores: { R: 3, L: 2 } },
+                        { text: "转移注意力，讲笑话或约出去玩", scores: { A: 3, E: 1 } },
+                        { text: "静静陪伴，适时递上纸巾或茶水", scores: { R: 3, I: 2 } }
+                    ]
+                },
+                {
+                    id: 14,
+                    text: "你如何看待'抽象文化'（用非常规方式表达）？",
+                    options: [
+                        { text: "这是数字时代的表达创新，很有价值", scores: { A: 3, E: 1 } },
+                        { text: "降低沟通效率，容易造成误解", scores: { R: 3, L: 2 } },
+                        { text: "特定场合有趣，但分情境使用", scores: { A: 2, R: 2, L: 1 } },
+                        { text: "一种防御机制，用荒诞化解严肃", scores: { R: 3, I: 2, L: 2 } }
+                    ]
+                },
+                {
+                    id: 15,
+                    text: "写工作报告时，你的文风？",
+                    options: [
+                        { text: "多用图表和可视化，让数据说话", scores: { A: 2, R: 2, L: 1 } },
+                        { text: "严谨的文字描述，注重逻辑链条", scores: { R: 3, L: 3 } },
+                        { text: "加入案例和故事，增强可读性", scores: { A: 3, V: 1 } },
+                        { text: "简洁的 bullet points，高效传达", scores: { R: 3, L: 2 } }
+                    ]
+                },
+                {
+                    id: 16,
+                    text: "面对一个荒谬的社会现象，你会？",
+                    options: [
+                        { text: "创作段子或meme进行讽刺", scores: { A: 3, E: 1 } },
+                        { text: "撰写长文分析深层原因", scores: { R: 3, L: 3 } },
+                        { text: "与好友吐槽，寻求情感共鸣", scores: { A: 3, V: 2 } },
+                        { text: "观察但不公开表态，避免争议", scores: { R: 3, I: 2 } }
+                    ]
+                },
+                {
+                    id: 17,
+                    text: "在人群中，你更希望自己是？",
+                    options: [
+                        { text: "被注意到的焦点，存在感强烈", scores: { V: 3, E: 2 } },
+                        { text: "隐形的观察者，不被打扰", scores: { P: 3, I: 2 } },
+                        { text: "特定圈子里的核心，对外低调", scores: { V: 2, P: 2, I: 1 } },
+                        { text: "根据需要切换，灵活调整存在感", scores: { L: 3, E: 1, I: 1 } }
+                    ]
+                },
+                {
+                    id: 18,
+                    text: "当你有一个精彩观点但没人问时，你会？",
+                    options: [
+                        { text: "主动找机会插入对话分享", scores: { V: 3, E: 2 } },
+                        { text: "等待合适的时机自然引出", scores: { P: 3, L: 2 } },
+                        { text: "如果重要就说，不重要就放弃", scores: { L: 2, V: 1, P: 1 } },
+                        { text: "在社交平台上发布，不打扰当前对话", scores: { P: 2, I: 2, R: 1 } }
+                    ]
+                },
+                {
+                    id: 19,
+                    text: "你更认同哪种自我展示策略？",
+                    options: [
+                        { text: "真实即正义，完全做自己", scores: { V: 3, A: 2 } },
+                        { text: "隐私很重要，只展示想被看到的", scores: { P: 3, L: 2 } },
+                        { text: "打造人设，但基于真实特质放大", scores: { V: 2, L: 2 } },
+                        { text: "不需要展示，我是谁与我无关", scores: { P: 3, I: 2, R: 1 } }
+                    ]
+                },
+                {
+                    id: 20,
+                    text: "在集体照片中，你通常？",
+                    options: [
+                        { text: "站在中心或前排，确保被看到", scores: { V: 3, E: 2 } },
+                        { text: "站在边缘或后排，避免显眼", scores: { P: 3, I: 2 } },
+                        { text: "找光线和角度最好的位置", scores: { V: 2, L: 2 } },
+                        { text: "能躲就躲，不喜欢被拍摄", scores: { P: 3, I: 3 } }
+                    ]
+                },
+                {
+                    id: 21,
+                    text: "你的'数字足迹'（网络痕迹）管理策略？",
+                    options: [
+                        { text: "精心经营，每个平台都有明确人设", scores: { V: 3, L: 2 } },
+                        { text: "随意自然，发什么看当下心情", scores: { V: 2, A: 2 } },
+                        { text: "极简主义，很少发布或定期清理", scores: { P: 3, R: 2 } },
+                        { text: "严格分层，不同平台展示不同面", scores: { L: 3, P: 2 } }
+                    ]
+                },
+                {
+                    id: 22,
+                    text: "面对他人的过度关注，你会？",
+                    options: [
+                        { text: "享受被关注的感觉，积极互动", scores: { V: 3, E: 2 } },
+                        { text: "感到压力，想要逃离或隐藏", scores: { P: 3, I: 2 } },
+                        { text: "礼貌回应但保持距离", scores: { P: 2, I: 2, R: 1 } },
+                        { text: "分析对方动机，决定回应策略", scores: { L: 3, R: 2 } }
+                    ]
+                },
+                {
+                    id: 23,
+                    text: "你如何看待'松弛感'（从容不迫的态度）？",
+                    options: [
+                        { text: "这是理想状态，actively 培养", scores: { L: 2, V: 1, P: 1 } },
+                        { text: "天生就有，不太在意他人评价", scores: { V: 2, P: 2 } },
+                        { text: "需要努力伪装，内心其实焦虑", scores: { P: 3, L: 2 } },
+                        { text: "一种特权，只有资源充足才能松弛", scores: { R: 3, L: 2 } }
+                    ]
+                },
+                {
+                    id: 24,
+                    text: "在群聊中，你的发言频率？",
+                    options: [
+                        { text: "高频活跃，经常带动话题", scores: { V: 3, E: 2 } },
+                        { text: "潜水观察，偶尔关键发言", scores: { P: 3, I: 2 } },
+                        { text: "特定话题才出现，专业型选手", scores: { P: 2, L: 2, R: 1 } },
+                        { text: "视群里有哪些人而定", scores: { L: 3, E: 1, I: 1 } }
+                    ]
+                },
+                {
+                    id: 25,
+                    text: "做重大决定时，你更依赖？",
+                    options: [
+                        { text: "逻辑分析，利弊清单", scores: { L: 3, R: 2 } },
+                        { text: "直觉感受，内心声音", scores: { C: 3, V: 2 } },
+                        { text: "参考他人经验和案例", scores: { L: 2, R: 2 } },
+                        { text: "随机应变，走一步看一步", scores: { C: 3, A: 2 } }
+                    ]
+                },
+                {
+                    id: 26,
+                    text: "你如何看待计划和变化的关系？",
+                    options: [
+                        { text: "计划是安全感来源，变化需要重新规划", scores: { L: 3, R: 2 } },
+                        { text: "计划赶不上变化，保持灵活更重要", scores: { C: 3, A: 2 } },
+                        { text: "大方向计划，小细节随机", scores: { L: 2, C: 2 } },
+                        { text: "根据事情重要性决定计划程度", scores: { L: 3, C: 1, R: 1 } }
+                    ]
+                },
+                {
+                    id: 27,
+                    text: "面对不确定性，你的状态？",
+                    options: [
+                        { text: "焦虑，需要尽快获得确定信息", scores: { L: 3, R: 2 } },
+                        { text: "兴奋，享受探索未知的过程", scores: { C: 3, A: 2 } },
+                        { text: "准备多种预案应对不同情况", scores: { L: 3, R: 2 } },
+                        { text: "顺其自然，相信船到桥头自然直", scores: { C: 3, V: 2 } }
+                    ]
+                },
+                {
+                    id: 28,
+                    text: "学习新技能时，你更喜欢？",
+                    options: [
+                        { text: "系统课程，从基础理论开始", scores: { L: 3, R: 2 } },
+                        { text: "直接上手，在实践中摸索", scores: { C: 3, A: 2 } },
+                        { text: "看教程但快速跳到自己需要的部分", scores: { L: 2, C: 2 } },
+                        { text: "找懂的人带，边做边问", scores: { C: 2, E: 2 } }
+                    ]
+                },
+                {
+                    id: 29,
+                    text: "你如何处理情绪低谷？",
+                    options: [
+                        { text: "分析原因，寻找系统性解决方案", scores: { L: 3, R: 2 } },
+                        { text: "允许自己感受，通过艺术或运动释放", scores: { C: 3, A: 2 } },
+                        { text: "找朋友倾诉，寻求情感支持", scores: { C: 3, E: 2 } },
+                        { text: "转移注意力，用工作或其他事填满", scores: { L: 2, R: 2 } }
+                    ]
+                },
+                {
+                    id: 30,
+                    text: "回顾过去的一年，你更倾向于？",
+                    options: [
+                        { text: "总结成就和数据，设定新年KPI", scores: { L: 3, R: 2 } },
+                        { text: "感受成长和变化，感恩重要时刻", scores: { C: 3, V: 2 } },
+                        { text: "分析哪些做对了哪些做错了", scores: { L: 3, R: 3 } },
+                        { text: "不回头看，专注当下和未来", scores: { C: 3, A: 2 } }
+                    ]
+                }
+            ];
+
+            // 16种热梗代称人格类型
+            const types = {
+                'AAAA': {
+                    name: 'Passion狂暴者',
+                    icon: '🔥',
+                    desc: '古希腊掌管Passion的神',
+                    analysis: '你的能量值永远满格，是人群中的"City不City"焦点。无论身处何地，你都能用Passion点燃全场，让"班味"瞬间消散。你可能经常在凌晨三点发朋友圈"人生需要Passion"，并且真的相信这一点。',
+                    quote: '"那咋了？Passion就完事了！"',
+                    dimensions: { passion: 98, chill: 20, abstract: 75, stealth: 10, logic: 40 }
+                },
+                'AAAP': {
+                    name: '显眼包Pro Max',
+                    icon: '🌟',
+                    desc: '水灵灵地成为焦点',
+                    analysis: '你天生就是C位，连偷感都很重地显眼。你理解"City不City"的真谛，并且永远选择最City的活法。你的存在本身就是一种"Next Level"，别人在躲镜头，你在追镜头。',
+                    quote: '"我不在镜头里，就在去镜头的路上。"',
+                    dimensions: { passion: 95, chill: 30, abstract: 60, stealth: 5, logic: 50 }
+                },
+                'AAPA': {
+                    name: '赛博激情家',
+                    icon: '🚀',
+                    desc: '数字游民的Passion版本',
+                    analysis: '你在虚拟世界和现实世界都Passion拉满，是最早一批"早C晚A"的实践者。你既能"赛博对账"算清楚每一分钱，又能为了一张演唱会门票"工资基础，消费不基础"。',
+                    quote: '"线上Passion，线下也Passion。"',
+                    dimensions: { passion: 90, chill: 25, abstract: 85, stealth: 20, logic: 60 }
+                },
+                'AAPP': {
+                    name: '预制显眼包',
+                    icon: '🎭',
+                    desc: '被社会预制的Passion人格',
+                    analysis: '你像是被标准化流程生产出来的"预制人"，但预制的配方是Passion。你有明显的"班味"，但班味里混着一股不服输的劲。你经常"嘻嘻不嘻嘻"地切换状态。',
+                    quote: '"预制但Passion，班味但显眼。"',
+                    dimensions: { passion: 85, chill: 40, abstract: 70, stealth: 30, logic: 65 }
+                },
+                'APAA': {
+                    name: '抽象Passion家',
+                    icon: '🎨',
+                    desc: '用抽象表达Passion',
+                    analysis: '你是"搞抽象"界的一股清流，因为你的抽象充满Passion。当别人还在"偷感很重"地发meme时，你已经创作出了新的meme宇宙。你是"坏猫之歌"的编曲者，"City不City"的重新定义者。',
+                    quote: '"抽象是一种Passion的生活方式。"',
+                    dimensions: { passion: 88, chill: 35, abstract: 98, stealth: 15, logic: 45 }
+                },
+                'APAP': {
+                    name: '梗图制造机',
+                    icon: '🤖',
+                    desc: '24小时不间断产出meme',
+                    analysis: '你的大脑结构可能和常人不同，看到的每一个生活场景都能自动转化为meme。你是朋友群里的"接"龙之王，也是"已读乱回"的宗师级人物。你的手机相册就是一座meme博物馆。',
+                    quote: '"万物皆可meme，包括我自己。"',
+                    dimensions: { passion: 75, chill: 50, abstract: 100, stealth: 25, logic: 55 }
+                },
+                'APPA': {
+                    name: '赛博吟游诗人',
+                    icon: '🎸',
+                    desc: '在数字世界吟唱Passion',
+                    analysis: '你游荡在网络的各个角落，用抽象的方式传播Passion。你可能在B站发弹幕"接"，在小红书"City不City"，在抖音"Passion"。你是真正的"数字游民"，没有固定栖息地，但处处是舞台。',
+                    quote: '"我的Passion，全网可见。"',
+                    dimensions: { passion: 82, chill: 45, abstract: 90, stealth: 40, logic: 50 }
+                },
+                'APPP': {
+                    name: '抽象观察家',
+                    icon: '🔍',
+                    desc: '冷静地搞抽象',
+                    analysis: '你是抽象界的旁观者，用理性眼光审视一切"City不City"的现象。你很少亲自下场Passion，但你的抽象评论总是一针见血。你可能经常"头好痒，要长脑子了"式地思考。',
+                    quote: '"我抽象，但我有逻辑。"',
+                    dimensions: { passion: 60, chill: 60, abstract: 95, stealth: 50, logic: 80 }
+                },
+                'PAAA': {
+                    name: '逻辑Passion家',
+                    icon: '🧮',
+                    desc: '理性地Passion，Passion地理性',
+                    analysis: '你是罕见的理性与感性平衡者。你会用Excel表格规划Passion的时间，用SWOT分析"那咋了"的可行性。你的"班味"和"Passion"达成了一种诡异的和谐。',
+                    quote: '"根据我的计算，现在应该Passion了。"',
+                    dimensions: { passion: 80, chill: 30, abstract: 50, stealth: 20, logic: 95 }
+                },
+                'PAAP': {
+                    name: '松弛感掌控者',
+                    icon: '🧘',
+                    desc: '从从容容游刃有余',
+                    analysis: '你深谙"松弛感"的真谛，在Passion和Chill之间找到完美平衡点。你可能是"City不City"的评判标准本身，既不会"匆匆忙忙连滚带爬"，也不会过度松弛到"那咋了"的虚无。',
+                    quote: '"Passion要有，松弛也要有。"',
+                    dimensions: { passion: 70, chill: 80, abstract: 60, stealth: 30, logic: 75 }
+                },
+                'PAPA': {
+                    name: '赛博分析师',
+                    icon: '💻',
+                    desc: '用数据解构一切热梗',
+                    analysis: '你是"赛博对账"的专业选手，能精确计算出"谷子经济"的泡沫指数。你对每一个热梗都进行溯源分析，知道"City不City"来自哪位博主，"Passion"出自哪场脱口秀。',
+                    quote: '"根据大数据分析，你该Passion了。"',
+                    dimensions: { passion: 55, chill: 50, abstract: 70, stealth: 40, logic: 100 }
+                },
+                'PAPP': {
+                    name: '预制理性人',
+                    icon: '📊',
+                    desc: '被系统预制的逻辑怪',
+                    analysis: '你是标准的"预制人"模板，但预制得很成功。你的"班味"是香水味，你的计划表精确到分钟。你很少"那咋了"，因为一切都在计划之中。你可能偷偷"接"好运，但表面永远冷静。',
+                    quote: '"计划之内，允许少量Passion。"',
+                    dimensions: { passion: 50, chill: 65, abstract: 45, stealth: 60, logic: 98 }
+                },
+                'PPAA': {
+                    name: '偷感Passion者',
+                    icon: '🥷',
+                    desc: '偷偷Passion，惊艳所有人',
+                    analysis: '你的Passion是隐蔽的，就像"偷感很重"地热爱生活。你可能在深夜偷偷"Passion"地健身，或者在工作间隙"偷感很重"地规划旅行。你的能量是暗流涌动的。',
+                    quote: '"我Passion了，但我没说。"',
+                    dimensions: { passion: 85, chill: 40, abstract: 55, stealth: 90, logic: 50 }
+                },
+                'PPAP': {
+                    name: '隐形显眼包',
+                    icon: '👻',
+                    desc: '在人群中隐形，在角落里显眼',
+                    analysis: '你是矛盾的集合体：既想"偷感很重"地消失，又忍不住"Passion"地发光。你可能在KTV坐在角落但唱得最大声，或者在群里潜水但突然发一张惊艳的meme。',
+                    quote: '"我在，但我假装不在；我Passion，但我偷偷Passion。"',
+                    dimensions: { passion: 75, chill: 55, abstract: 65, stealth: 85, logic: 60 }
+                },
+                'PPPA': {
+                    name: '终极偷感人',
+                    icon: '🐱',
+                    desc: '偷感很重地观察世界',
+                    analysis: '你的偷感已经修炼到化境，能"偷感很重"地参加派对，"偷感很重"地表达爱意，甚至"偷感很重"地Passion。你是"流泪猫猫头"的人间体，看似脆弱实则敏锐。',
+                    quote: '"别看我，我在偷看这个世界。"',
+                    dimensions: { passion: 60, chill: 70, abstract: 75, stealth: 100, logic: 45 }
+                },
+                'PPPP': {
+                    name: '抽象隐身人',
+                    icon: '👤',
+                    desc: '存在但不可见，抽象但真实',
+                    analysis: '你已经达到了"大隐隐于市"的境界，用抽象作为隐身衣。你在群里永远"已读乱回"，在现实中永远"City不City"地飘忽。你可能是最懂"那咋了"哲学的人，因为存在感降到最低，反而看到了一切。',
+                    quote: '"我不在，故我在；我抽象，故我真实。"',
+                    dimensions: { passion: 40, chill: 90, abstract: 95, stealth: 98, logic: 55 }
+                }
+            };
+
+            let currentQuestion = 0;
+            let answers = new Array(30).fill(null);
+            let scores = { E: 0, I: 0, A: 0, R: 0, P: 0, V: 0, L: 0, C: 0 };
+            let currentType = null;
+
+            const homePage = document.getElementById('homePage');
+            const quizPage = document.getElementById('quizPage');
+            const resultPage = document.getElementById('resultPage');
+            const questionText = document.getElementById('questionText');
+            const optionsContainer = document.getElementById('optionsContainer');
+            const currentNum = document.getElementById('currentNum');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressPercent = document.getElementById('progressPercent');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const questionCard = document.getElementById('questionCard');
+
+            document.getElementById('startBtn').addEventListener('click', startQuiz);
+            document.getElementById('prevBtn').addEventListener('click', prevQuestion);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            document.getElementById('restartBtn').addEventListener('click', restartQuiz);
+            document.getElementById('shareBtn').addEventListener('click', captureAndSave);
+
+            function startQuiz() {
+                homePage.style.display = 'none';
+                quizPage.style.display = 'flex';
+                resultPage.style.display = 'none';
+                
+                currentQuestion = 0;
+                answers = new Array(30).fill(null);
+                scores = { E: 0, I: 0, A: 0, R: 0, P: 0, V: 0, L: 0, C: 0 };
+                
+                renderQuestion();
+            }
+
+            function renderQuestion() {
+                const q = questions[currentQuestion];
+                questionText.textContent = q.text;
+                currentNum.textContent = currentQuestion + 1;
+                
+                optionsContainer.innerHTML = '';
+                
+                q.options.forEach((opt, idx) => {
+                    const div = document.createElement('div');
+                    div.className = `option-card p-4 rounded-lg cursor-pointer text-left ${answers[currentQuestion] === idx ? 'selected' : ''}`;
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-sm font-bold ${answers[currentQuestion] === idx ? 'bg-green-500 text-black' : 'text-gray-400'}">${String.fromCharCode(65 + idx)}</span>
+                            <span class="text-gray-200">${opt.text}</span>
+                        </div>
+                    `;
+                    div.onclick = () => selectOption(idx);
+                    optionsContainer.appendChild(div);
+                });
+                
+                questionCard.classList.remove('slide-in');
+                void questionCard.offsetWidth;
+                questionCard.classList.add('slide-in');
+                
+                updateProgress();
+                updateButtons();
+            }
+
+            function selectOption(idx) {
+                answers[currentQuestion] = idx;
+                
+                const cards = optionsContainer.querySelectorAll('.option-card');
+                cards.forEach((card, i) => {
+                    const badge = card.querySelector('span:first-child');
+                    if (i === idx) {
+                        card.classList.add('selected');
+                        badge.classList.remove('bg-gray-800', 'text-gray-400');
+                        badge.classList.add('bg-green-500', 'text-black');
+                    } else {
+                        card.classList.remove('selected');
+                        badge.classList.add('bg-gray-800', 'text-gray-400');
+                        badge.classList.remove('bg-green-500', 'text-black');
+                    }
+                });
+                
+                updateButtons();
+                
+                setTimeout(() => {
+                    if (currentQuestion < 29) {
+                        nextQuestion();
+                    } else {
+                        nextBtn.textContent = '查看结果 →';
+                        nextBtn.disabled = false;
+                        nextBtn.classList.remove('bg-gray-800', 'text-gray-400', 'cursor-not-allowed');
+                        nextBtn.classList.add('bg-green-600', 'text-white');
+                        nextBtn.onclick = showResult;
+                    }
+                }, 400);
+            }
+
+            function nextQuestion() {
+                if (currentQuestion < 29 && answers[currentQuestion] !== null) {
+                    currentQuestion++;
+                    renderQuestion();
+                    prevBtn.disabled = false;
+                }
+            }
+
+            function prevQuestion() {
+                if (currentQuestion > 0) {
+                    currentQuestion--;
+                    renderQuestion();
+                    if (currentQuestion === 0) {
+                        prevBtn.disabled = true;
+                    }
+                    if (currentQuestion < 29) {
+                        nextBtn.textContent = '下一题 →';
+                        nextBtn.onclick = nextQuestion;
+                    }
+                }
+            }
+
+            function updateButtons() {
+                if (answers[currentQuestion] !== null) {
+                    nextBtn.disabled = false;
+                    nextBtn.classList.remove('bg-gray-800', 'text-gray-400', 'cursor-not-allowed');
+                    nextBtn.classList.add('bg-white', 'text-black');
+                } else {
+                    nextBtn.disabled = true;
+                    nextBtn.classList.add('bg-gray-800', 'text-gray-400', 'cursor-not-allowed');
+                    nextBtn.classList.remove('bg-white', 'text-black');
+                }
+            }
+
+            function updateProgress() {
+                const percent = ((currentQuestion + 1) / 30) * 100;
+                progressBar.style.width = percent + '%';
+                progressText.textContent = `${currentQuestion + 1} / 30`;
+                progressPercent.textContent = Math.round(percent) + '%';
+            }
+
+            function calculateResult() {
+                scores = { E: 0, I: 0, A: 0, R: 0, P: 0, V: 0, L: 0, C: 0 };
+                
+                answers.forEach((ansIdx, qIdx) => {
+                    if (ansIdx !== null && questions[qIdx]) {
+                        const selectedOption = questions[qIdx].options[ansIdx];
+                        if (selectedOption && selectedOption.scores) {
+                            for (let [key, value] of Object.entries(selectedOption.scores)) {
+                                if (scores.hasOwnProperty(key)) {
+                                    scores[key] += value;
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                const dims = [
+                    scores.E >= scores.I ? 'A' : 'P',
+                    scores.A >= scores.R ? 'A' : 'P',
+                    scores.P >= scores.V ? 'P' : 'V',
+                    scores.L >= scores.C ? 'A' : 'P'
+                ];
+                
+                return dims.join('');
+            }
+
+            function showResult() {
+                const typeCode = calculateResult();
+                currentType = types[typeCode] || types['AAAA'];
+                
+                quizPage.style.display = 'none';
+                resultPage.style.display = 'flex';
+                
+                // 填充正常显示区域
+                document.getElementById('resultTitle').textContent = typeCode;
+                document.getElementById('resultSubtitle').textContent = currentType.name;
+                document.getElementById('typeIcon').textContent = currentType.icon;
+                document.getElementById('typeName').textContent = currentType.name;
+                document.getElementById('typeDesc').textContent = currentType.desc;
+                document.getElementById('typeAnalysis').textContent = currentType.analysis;
+                document.getElementById('typeQuote').textContent = currentType.quote;
+                
+                const matchRate = Math.floor(Math.random() * 15) + 85;
+                document.getElementById('matchRate').textContent = `匹配度 ${matchRate}%`;
+                
+                // 填充截图区域
+                document.getElementById('captureTitle').textContent = typeCode;
+                document.getElementById('captureSubtitle').textContent = currentType.name;
+                document.getElementById('captureMatch').textContent = `匹配度 ${matchRate}%`;
+                document.getElementById('captureIcon').textContent = currentType.icon;
+                document.getElementById('captureName').textContent = currentType.name;
+                document.getElementById('captureDesc').textContent = currentType.desc;
+                document.getElementById('captureAnalysis').textContent = currentType.analysis;
+                document.getElementById('captureQuote').textContent = currentType.quote;
+                
+                // 填充维度条
+                const dimsContainer = document.getElementById('dimensionsContainer');
+                const captureDimsContainer = document.getElementById('captureDimensions');
+                dimsContainer.innerHTML = '';
+                captureDimsContainer.innerHTML = '';
+                
+                const dimData = [
+                    { key: 'passion', label: 'Passion能量', value: currentType.dimensions.passion, color: 'from-pink-500 to-red-500' },
+                    { key: 'chill', label: '松弛感', value: currentType.dimensions.chill, color: 'from-blue-400 to-cyan-400' },
+                    { key: 'abstract', label: '抽象力', value: currentType.dimensions.abstract, color: 'from-purple-500 to-pink-500' },
+                    { key: 'stealth', label: '偷感指数', value: currentType.dimensions.stealth, color: 'from-gray-600 to-gray-400' },
+                    { key: 'logic', label: '逻辑值', value: currentType.dimensions.logic, color: 'from-green-500 to-emerald-400' }
+                ];
+                
+                dimData.forEach((dim, index) => {
+                    // 正常显示区域
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center gap-4';
+                    row.innerHTML = `
+                        <span class="w-24 text-sm text-gray-400">${dim.label}</span>
+                        <div class="flex-1 h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="dimension-fill h-full rounded-full bg-gradient-to-r ${dim.color}" style="width: 0%"></div>
+                        </div>
+                        <span class="w-12 text-right text-sm font-mono text-gray-300">${dim.value}%</span>
+                    `;
+                    dimsContainer.appendChild(row);
+                    
+                    setTimeout(() => {
+                        row.querySelector('.dimension-fill').style.width = dim.value + '%';
+                    }, 100 * index);
+                    
+                    // 截图区域
+                    const captureRow = document.createElement('div');
+                    captureRow.className = 'capture-dim-item';
+                    captureRow.innerHTML = `
+                        <span class="capture-dim-label">${dim.label}</span>
+                        <div class="capture-dim-bar">
+                            <div class="capture-dim-fill bg-gradient-to-r ${dim.color}" style="width: ${dim.value}%"></div>
+                        </div>
+                        <span class="capture-dim-value">${dim.value}%</span>
+                    `;
+                    captureDimsContainer.appendChild(captureRow);
+                });
+                
+                window.scrollTo(0, 0);
+            }
+
+            // 截图并保存功能
+            async function captureAndSave() {
+                const loading = document.getElementById('captureLoading');
+                const modal = document.getElementById('screenshotModal');
+                const container = document.getElementById('screenshotContainer');
+                const hint = document.getElementById('screenshotHint');
+                const captureArea = document.getElementById('resultCapture');
+                
+                // 显示加载动画
+                loading.classList.add('active');
+                
+                // 临时显示截图区域（移出视口外渲染）
+                captureArea.style.position = 'fixed';
+                captureArea.style.left = '-9999px';
+                captureArea.style.top = '0';
+                captureArea.style.display = 'block';
+                captureArea.style.width = '800px';
+                
+                // 等待渲染完成
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                try {
+                    const canvas = await html2canvas(captureArea, {
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#0a0a0a',
+                        logging: false,
+                        onclone: function(clonedDoc) {
+                            clonedDoc.getElementById('resultCapture').style.position = 'static';
+                            clonedDoc.getElementById('resultCapture').style.left = '0';
+                        }
+                    });
+                    
+                    // 恢复截图区域样式
+                    captureArea.style.position = '';
+                    captureArea.style.left = '';
+                    captureArea.style.display = 'none';
+                    captureArea.style.width = '';
+                    
+                    // 转换为图片
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    // 检测是否为iOS设备
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    
+                    if (isIOS) {
+                        // iOS：显示预览，提示长按保存
+                        container.innerHTML = `<img src="${imgData}" alt="TMDTI测试结果">`;
+                        hint.textContent = '长按上方图片保存到手机相册';
+                        modal.classList.add('active');
+                    } else {
+                        // 安卓/PC：直接下载
+                        const link = document.createElement('a');
+                        link.download = `TMDTI-${currentType?.name || '结果'}-${Date.now()}.png`;
+                        link.href = imgData;
+                        link.click();
+                        
+                        // 显示成功提示
+                        container.innerHTML = `<img src="${imgData}" alt="TMDTI测试结果">`;
+                        hint.textContent = '图片已下载，请在相册中查看';
+                        modal.classList.add('active');
+                    }
+                    
+                } catch (error) {
+                    console.error('截图失败:', error);
+                    alert('截图生成失败，请重试或截图保存页面');
+                } finally {
+                    loading.classList.remove('active');
+                }
+            }
+
+            // 关闭截图预览
+            window.closeScreenshot = function() {
+                document.getElementById('screenshotModal').classList.remove('active');
+            };
+
+            function restartQuiz() {
+                homePage.style.display = 'flex';
+                quizPage.style.display = 'none';
+                resultPage.style.display = 'none';
+                
+                nextBtn.textContent = '下一题 →';
+                nextBtn.onclick = nextQuestion;
+                nextBtn.classList.add('bg-gray-800', 'text-gray-400', 'cursor-not-allowed');
+                nextBtn.classList.remove('bg-green-600', 'text-white');
+            }
+
+            // 键盘导航
+            document.addEventListener('keydown', (e) => {
+                if (quizPage.style.display === 'flex') {
+                    if (e.key >= '1' && e.key <= '4') {
+                        const idx = parseInt(e.key) - 1;
+                        const cards = optionsContainer.querySelectorAll('.option-card');
+                        if (idx < cards.length) {
+                            selectOption(idx);
+                        }
+                    } else if (e.key === 'ArrowLeft' && currentQuestion > 0) {
+                        prevQuestion();
+                    } else if (e.key === 'ArrowRight' && answers[currentQuestion] !== null) {
+                        if (currentQuestion < 29) nextQuestion();
+                        else if (currentQuestion === 29) showResult();
+                    }
+                }
+            });
+
+            console.log('TMDTI App initialized successfully');
+        }
+    </script>
+</body>
+</html>
