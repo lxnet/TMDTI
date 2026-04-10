@@ -9,7 +9,7 @@
 
 在这个"那咋了"和"已读乱回"的时代，TMDTI 用量身定制的 30 道灵魂拷问，测出你究竟是 **"偷感很重"** 的隐形人，还是 **"Passion"** 拉满的显眼包。
 
-🌐 **[在线体验](https://yourusername.github.io/tmdti-test/)**
+🌐 **[在线体验](tmdti.suify.cn)**
 
 ---
 
