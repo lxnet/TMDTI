@@ -145,32 +145,43 @@
             display: none;
         }
         
-        /* 截图预览弹窗 */
         .screenshot-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             z-index: 100;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            -webkit-overflow-scrolling: touch;
         }
-        
+
         .screenshot-modal.active {
             display: flex;
         }
-        
+
         .screenshot-container {
             max-width: 100%;
-            max-height: 70vh;
+            max-height: 65vh;
             overflow: auto;
             border-radius: 12px;
             box-shadow: 0 0 40px rgba(255,255,255,0.1);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 640px) {
+            .screenshot-container {
+                max-height: 60vh;
+            }
+            .screenshot-hint {
+                font-size: 14px;
+                padding: 0 10px;
+            }
         }
         
         .screenshot-container img {
@@ -197,7 +208,6 @@
             cursor: pointer;
         }
         
-        /* 结果卡片样式优化 - 确保截图美观 */
         #resultCapture {
             background: #0a0a0a;
             padding: 40px 20px;
@@ -341,7 +351,6 @@
             font-weight: 500;
         }
         
-        /* 截图时的特殊样式 */
         .screenshotting #resultPage > div:not(#resultCapture) {
             display: none;
         }
@@ -350,7 +359,6 @@
             display: block !important;
         }
         
-        /* 加载动画 */
         .capture-loading {
             position: fixed;
             top: 0;
@@ -386,20 +394,17 @@
 <body class="min-h-screen flex flex-col">
     <div class="grain"></div>
     
-    <!-- 加载动画 -->
     <div id="captureLoading" class="capture-loading">
         <div class="spinner"></div>
         <p class="mt-4 text-white">正在生成结果图片...</p>
     </div>
     
-    <!-- 截图预览弹窗 -->
     <div id="screenshotModal" class="screenshot-modal">
         <div class="screenshot-container" id="screenshotContainer"></div>
         <p class="screenshot-hint" id="screenshotHint">长按上方图片保存到手机相册</p>
         <button class="screenshot-close" onclick="closeScreenshot()">关闭</button>
     </div>
     
-    <!-- 首页 -->
     <div id="homePage" class="active-page flex-1 flex flex-col items-center justify-center px-4 py-12 relative">
         <div class="absolute inset-0 overflow-hidden">
             <div class="absolute top-20 left-10 w-64 h-64 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
@@ -428,21 +433,30 @@
             
             <div class="mt-12 flex flex-col items-center gap-4">
                 <button id="startBtn" class="group relative px-8 py-4 bg-white text-black font-bold text-lg rounded-full overflow-hidden transition-all hover:scale-105 pulse-glow">
-                    <span class="relative z-10">开始测试（共30题）</span>
+                    <span class="relative z-10" id="startBtnText">开始测试（共30题）</span>
                     <div class="absolute inset-0 bg-gradient-to-r from-pink-500 to-cyan-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
                 </button>
-                
+
+                <button id="continueBtn" class="hidden group relative px-8 py-3 border border-white/30 text-white font-medium text-base rounded-full overflow-hidden transition-all hover:scale-105 hover:bg-white/10">
+                    <span class="relative z-10">继续上次进度</span>
+                    <span id="progressHint" class="text-xs text-gray-400 ml-2"></span>
+                </button>
+
+                <button id="clearProgressBtn" class="hidden text-xs text-gray-600 hover:text-gray-400 transition-colors underline mt-2">
+                    清除进度重新开始
+                </button>
+
                 <p class="text-xs text-gray-500 mt-4">* 全选完才会放行。世界已经够乱了，起码把题做完整。</p>
             </div>
             
             <div class="mt-16 pt-8 border-t border-gray-800 text-xs text-gray-600 space-y-2">
-                <p>Copyright © 2020-2026 南泽 All rights reserved<a href="/" target="_blank" class="underline hover:text-gray-400"></a></p>
+                <p>Copyright © 2020-2026  南泽  All rights reserved<a href="/" target="_blank" class="underline hover:text-gray-400"></a></p>
                 <p>仅供娱乐，请勿用于相亲、面试或算命</p>
+                 <p><a href="https://github.com/lxnet/TMDTI" target="_blank" class="underline hover:text-gray-400">项目地址</a></p>
             </div>
         </div>
     </div>
 
-    <!-- 答题页面 -->
     <div id="quizPage" class="flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 py-8">
         <div class="mb-8">
             <div class="flex justify-between text-sm text-gray-400 mb-2">
@@ -476,9 +490,7 @@
         </div>
     </div>
 
-    <!-- 结果页面 -->
     <div id="resultPage" class="flex-1 flex flex-col items-center justify-start px-4 py-12 overflow-y-auto">
-        <!-- 用于截图的区域 -->
         <div id="resultCapture" style="display: none;">
             <div class="capture-header">
                 <div class="capture-title" id="captureTitle"></div>
@@ -503,7 +515,6 @@
             <div class="capture-footer">本测试仅供娱乐 | 基于网络亚文化研究设计</div>
         </div>
         
-        <!-- 正常显示的结果区域 -->
         <div class="max-w-3xl w-full mx-auto" id="resultDisplay">
             <div class="text-center mb-12 fade-in">
                 <p class="text-gray-400 mb-4">你的心灵原型</p>
@@ -544,7 +555,10 @@
             
             <div class="mt-12 text-center text-xs text-gray-600 fade-in" style="animation-delay: 0.8s;">
                 <p>本测试仅供娱乐，别拿它当诊断、面试、相亲、分手、招魂、算命或人生判决书。</p>
-                <p class="mt-2">TMDTI - 在这个"City不City"的世界里，找到你的"Passion"。</p>
+                <p class="mt-2">TMDTI - 在这个"City不City"的世界里，找到你的"Passion"。</p> 
+<br>
+<p>Copyright © 2020-2026  南泽  All rights reserved<a href="/" target="_blank" class="underline hover:text-gray-400"></a></p>
+ <p><a href="https://github.com/lxnet/TMDTI" target="_blank" class="underline hover:text-gray-400">项目地址</a></p>
             </div>
         </div>
     </div>
@@ -556,7 +570,9 @@
         });
 
         function initApp() {
-            // 30道题目数据
+            const TOTAL_QUESTIONS = 30;
+            const STORAGE_KEY = 'tmdti_progress';
+            
             const questions = [
                 {
                     id: 1,
@@ -860,7 +876,6 @@
                 }
             ];
 
-            // 16种热梗代称人格类型
             const types = {
                 'AAAA': {
                     name: 'Passion狂暴者',
@@ -993,7 +1008,7 @@
             };
 
             let currentQuestion = 0;
-            let answers = new Array(30).fill(null);
+            let answers = new Array(TOTAL_QUESTIONS).fill(null);
             let scores = { E: 0, I: 0, A: 0, R: 0, P: 0, V: 0, L: 0, C: 0 };
             let currentType = null;
 
@@ -1016,16 +1031,68 @@
             document.getElementById('restartBtn').addEventListener('click', restartQuiz);
             document.getElementById('shareBtn').addEventListener('click', captureAndSave);
 
+            function debounce(func, delay) {
+                let timeoutId;
+                return function(...args) {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            }
+            
+            function doSaveProgress() {
+                const data = {
+                    currentQuestion,
+                    answers,
+                    timestamp: Date.now()
+                };
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                } catch (e) {
+                    console.warn('Failed to save progress:', e);
+                }
+            }
+            
+            const saveProgress = debounce(doSaveProgress, 500);
+
+            function loadProgress() {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        if (data.answers && data.answers.length === TOTAL_QUESTIONS) {
+                            return data;
+                        }
+                    } catch (e) {
+                        console.error('Failed to load progress:', e);
+                    }
+                }
+                return null;
+            }
+            
+            function clearProgress() {
+                localStorage.removeItem(STORAGE_KEY);
+            }
+
             function startQuiz() {
+                // 处理 active-page 类避免 !important CSS 覆盖
+                homePage.classList.remove('active-page');
+                quizPage.classList.add('active-page');
+                resultPage.classList.remove('active-page');
+                
                 homePage.style.display = 'none';
                 quizPage.style.display = 'flex';
                 resultPage.style.display = 'none';
                 
                 currentQuestion = 0;
-                answers = new Array(30).fill(null);
+                answers = new Array(TOTAL_QUESTIONS).fill(null);
                 scores = { E: 0, I: 0, A: 0, R: 0, P: 0, V: 0, L: 0, C: 0 };
                 
                 renderQuestion();
+
+                // 平滑滚动到题目区域顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
             function renderQuestion() {
@@ -1059,6 +1126,8 @@
             function selectOption(idx) {
                 answers[currentQuestion] = idx;
                 
+                saveProgress();
+                
                 const cards = optionsContainer.querySelectorAll('.option-card');
                 cards.forEach((card, i) => {
                     const badge = card.querySelector('span:first-child');
@@ -1076,7 +1145,7 @@
                 updateButtons();
                 
                 setTimeout(() => {
-                    if (currentQuestion < 29) {
+                    if (currentQuestion < TOTAL_QUESTIONS - 1) {
                         nextQuestion();
                     } else {
                         nextBtn.textContent = '查看结果 →';
@@ -1089,7 +1158,7 @@
             }
 
             function nextQuestion() {
-                if (currentQuestion < 29 && answers[currentQuestion] !== null) {
+                if (currentQuestion < TOTAL_QUESTIONS - 1 && answers[currentQuestion] !== null) {
                     currentQuestion++;
                     renderQuestion();
                     prevBtn.disabled = false;
@@ -1103,7 +1172,7 @@
                     if (currentQuestion === 0) {
                         prevBtn.disabled = true;
                     }
-                    if (currentQuestion < 29) {
+                    if (currentQuestion < TOTAL_QUESTIONS - 1) {
                         nextBtn.textContent = '下一题 →';
                         nextBtn.onclick = nextQuestion;
                     }
@@ -1123,9 +1192,9 @@
             }
 
             function updateProgress() {
-                const percent = ((currentQuestion + 1) / 30) * 100;
+                const percent = ((currentQuestion + 1) / TOTAL_QUESTIONS) * 100;
                 progressBar.style.width = percent + '%';
-                progressText.textContent = `${currentQuestion + 1} / 30`;
+                progressText.textContent = `${currentQuestion + 1} / ${TOTAL_QUESTIONS}`;
                 progressPercent.textContent = Math.round(percent) + '%';
             }
 
@@ -1148,7 +1217,7 @@
                 const dims = [
                     scores.E >= scores.I ? 'A' : 'P',
                     scores.A >= scores.R ? 'A' : 'P',
-                    scores.P >= scores.V ? 'P' : 'V',
+                    scores.P >= scores.V ? 'A' : 'P',
                     scores.L >= scores.C ? 'A' : 'P'
                 ];
                 
@@ -1159,10 +1228,14 @@
                 const typeCode = calculateResult();
                 currentType = types[typeCode] || types['AAAA'];
                 
+                // 处理 active-page 类
+                homePage.classList.remove('active-page');
+                quizPage.classList.remove('active-page');
+                resultPage.classList.add('active-page');
+                
                 quizPage.style.display = 'none';
                 resultPage.style.display = 'flex';
                 
-                // 填充正常显示区域
                 document.getElementById('resultTitle').textContent = typeCode;
                 document.getElementById('resultSubtitle').textContent = currentType.name;
                 document.getElementById('typeIcon').textContent = currentType.icon;
@@ -1174,7 +1247,6 @@
                 const matchRate = Math.floor(Math.random() * 15) + 85;
                 document.getElementById('matchRate').textContent = `匹配度 ${matchRate}%`;
                 
-                // 填充截图区域
                 document.getElementById('captureTitle').textContent = typeCode;
                 document.getElementById('captureSubtitle').textContent = currentType.name;
                 document.getElementById('captureMatch').textContent = `匹配度 ${matchRate}%`;
@@ -1184,7 +1256,6 @@
                 document.getElementById('captureAnalysis').textContent = currentType.analysis;
                 document.getElementById('captureQuote').textContent = currentType.quote;
                 
-                // 填充维度条
                 const dimsContainer = document.getElementById('dimensionsContainer');
                 const captureDimsContainer = document.getElementById('captureDimensions');
                 dimsContainer.innerHTML = '';
@@ -1199,7 +1270,6 @@
                 ];
                 
                 dimData.forEach((dim, index) => {
-                    // 正常显示区域
                     const row = document.createElement('div');
                     row.className = 'flex items-center gap-4';
                     row.innerHTML = `
@@ -1215,7 +1285,6 @@
                         row.querySelector('.dimension-fill').style.width = dim.value + '%';
                     }, 100 * index);
                     
-                    // 截图区域
                     const captureRow = document.createElement('div');
                     captureRow.className = 'capture-dim-item';
                     captureRow.innerHTML = `
@@ -1230,8 +1299,38 @@
                 
                 window.scrollTo(0, 0);
             }
+            
+            function checkSavedProgress() {
+                const saved = loadProgress();
+                const continueBtn = document.getElementById('continueBtn');
+                const clearProgressBtn = document.getElementById('clearProgressBtn');
+                const progressHint = document.getElementById('progressHint');
+                const startBtnText = document.getElementById('startBtnText');
+                
+                if (saved && saved.answers) {
+                    const answeredCount = saved.answers.filter(a => a !== null).length;
+                    if (answeredCount > 0 && answeredCount < TOTAL_QUESTIONS) {
+                        continueBtn.classList.remove('hidden');
+                        clearProgressBtn.classList.remove('hidden');
+                        progressHint.textContent = `(${answeredCount}/${TOTAL_QUESTIONS})`;
+                        startBtnText.textContent = '重新开始';
+                        return true;
+                    } else if (answeredCount === TOTAL_QUESTIONS) {
+                        continueBtn.classList.remove('hidden');
+                        continueBtn.querySelector('span:not(.text-xs)').textContent = '查看上次结果';
+                        clearProgressBtn.classList.remove('hidden');
+                        progressHint.textContent = '(已完成)';
+                        startBtnText.textContent = '重新测试';
+                        return true;
+                    }
+                }
+                
+                continueBtn.classList.add('hidden');
+                clearProgressBtn.classList.add('hidden');
+                startBtnText.textContent = '开始测试（共30题）';
+                return false;
+            }
 
-            // 截图并保存功能
             async function captureAndSave() {
                 const loading = document.getElementById('captureLoading');
                 const modal = document.getElementById('screenshotModal');
@@ -1239,17 +1338,14 @@
                 const hint = document.getElementById('screenshotHint');
                 const captureArea = document.getElementById('resultCapture');
                 
-                // 显示加载动画
                 loading.classList.add('active');
                 
-                // 临时显示截图区域（移出视口外渲染）
                 captureArea.style.position = 'fixed';
                 captureArea.style.left = '-9999px';
                 captureArea.style.top = '0';
                 captureArea.style.display = 'block';
                 captureArea.style.width = '800px';
                 
-                // 等待渲染完成
                 await new Promise(resolve => setTimeout(resolve, 100));
                 
                 try {
@@ -1259,37 +1355,37 @@
                         allowTaint: true,
                         backgroundColor: '#0a0a0a',
                         logging: false,
+                        foreignObjectRendering: false,
+                        removeContainer: true,
                         onclone: function(clonedDoc) {
-                            clonedDoc.getElementById('resultCapture').style.position = 'static';
-                            clonedDoc.getElementById('resultCapture').style.left = '0';
+                            const captureEl = clonedDoc.getElementById('resultCapture');
+                            captureEl.style.position = 'static';
+                            captureEl.style.left = '0';
+                            captureEl.style.transform = 'none';
+                            captureEl.style.margin = '0';
+                            captureEl.style.maxWidth = '800px';
                         }
                     });
                     
-                    // 恢复截图区域样式
                     captureArea.style.position = '';
                     captureArea.style.left = '';
                     captureArea.style.display = 'none';
                     captureArea.style.width = '';
                     
-                    // 转换为图片
                     const imgData = canvas.toDataURL('image/png');
                     
-                    // 检测是否为iOS设备
                     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                     
                     if (isIOS) {
-                        // iOS：显示预览，提示长按保存
                         container.innerHTML = `<img src="${imgData}" alt="TMDTI测试结果">`;
                         hint.textContent = '长按上方图片保存到手机相册';
                         modal.classList.add('active');
                     } else {
-                        // 安卓/PC：直接下载
                         const link = document.createElement('a');
                         link.download = `TMDTI-${currentType?.name || '结果'}-${Date.now()}.png`;
                         link.href = imgData;
                         link.click();
                         
-                        // 显示成功提示
                         container.innerHTML = `<img src="${imgData}" alt="TMDTI测试结果">`;
                         hint.textContent = '图片已下载，请在相册中查看';
                         modal.classList.add('active');
@@ -1303,23 +1399,37 @@
                 }
             }
 
-            // 关闭截图预览
             window.closeScreenshot = function() {
                 document.getElementById('screenshotModal').classList.remove('active');
             };
 
             function restartQuiz() {
+                // 清除保存的进度
+                clearProgress();
+                
+                // 恢复 active-page 类到首页
+                homePage.classList.add('active-page');
+                quizPage.classList.remove('active-page');
+                resultPage.classList.remove('active-page');
+                
                 homePage.style.display = 'flex';
                 quizPage.style.display = 'none';
                 resultPage.style.display = 'none';
                 
+                // 重置状态
+                currentQuestion = 0;
+                answers = new Array(TOTAL_QUESTIONS).fill(null);
+                scores = { E: 0, I: 0, A: 0, R: 0, P: 0, V: 0, L: 0, C: 0 };
+                
                 nextBtn.textContent = '下一题 →';
                 nextBtn.onclick = nextQuestion;
                 nextBtn.classList.add('bg-gray-800', 'text-gray-400', 'cursor-not-allowed');
-                nextBtn.classList.remove('bg-green-600', 'text-white');
+                nextBtn.classList.remove('bg-green-600', 'bg-white', 'text-black', 'text-white');
+                
+                // 滚动到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
-            // 键盘导航
             document.addEventListener('keydown', (e) => {
                 if (quizPage.style.display === 'flex') {
                     if (e.key >= '1' && e.key <= '4') {
@@ -1331,12 +1441,44 @@
                     } else if (e.key === 'ArrowLeft' && currentQuestion > 0) {
                         prevQuestion();
                     } else if (e.key === 'ArrowRight' && answers[currentQuestion] !== null) {
-                        if (currentQuestion < 29) nextQuestion();
-                        else if (currentQuestion === 29) showResult();
+                        if (currentQuestion < TOTAL_QUESTIONS - 1) nextQuestion();
+                        else if (currentQuestion === TOTAL_QUESTIONS - 1) showResult();
                     }
                 }
             });
 
+            document.getElementById('continueBtn').addEventListener('click', () => {
+                const saved = loadProgress();
+                if (saved) {
+                    if (saved.currentQuestion >= TOTAL_QUESTIONS - 1 && 
+                        saved.answers.every(a => a !== null)) {
+                        answers = saved.answers;
+                        showResult();
+                    } else {
+                        startQuiz();
+                    }
+                }
+                // 滚动到题目区域
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            document.getElementById('clearProgressBtn').addEventListener('click', () => {
+                if (confirm('确定要清除保存的进度吗？')) {
+                    clearProgress();
+                    checkSavedProgress();
+                }
+            });
+            
+            checkSavedProgress();
+            
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    if (homePage.style.display !== 'none') {
+                        checkSavedProgress();
+                    }
+                }
+            });
+            
             console.log('TMDTI App initialized successfully');
         }
     </script>
